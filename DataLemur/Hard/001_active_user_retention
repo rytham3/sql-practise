@@ -1,0 +1,19 @@
+WITH monthly_users AS (
+      SELECT DISTINCT user_id,
+        EXTRACT(YEAR FROM event_date) AS year,
+        EXTRACT(MONTH FROM event_date) AS month
+      FROM user_actions
+      WHERE event_type in ('sign-in','like','comment')
+)
+
+
+SELECT 
+    7 AS month,
+    COUNT(DISTINCT july.user_id) AS monthly_active_users
+FROM monthly_users AS july
+JOIN monthly_users AS june
+    ON july.user_id = june.user_id
+WHERE july.year = 2022
+      AND july.month = 7
+      AND june.year = 2022
+      AND june.month = 6
