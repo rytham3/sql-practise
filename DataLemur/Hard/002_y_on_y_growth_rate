@@ -1,0 +1,31 @@
+WITH yearly_spend AS (
+    SELECT
+        EXTRACT(YEAR FROM transaction_date) AS year_,
+        product_id,
+        SUM(spend) AS curr_year_spend
+    FROM user_transactions
+    GROUP BY 1,2
+),
+
+final AS (
+    SELECT
+        year_,
+        product_id,
+        curr_year_spend,
+        LAG(curr_year_spend) OVER(
+        PARTITION BY product_id
+        ORDER BY year_
+        ) AS prev_year_spend
+    FROM yearly_spend
+)
+
+
+SELECT
+    year_,
+    product_id,
+    curr_year_spend,
+    prev_year_spend,
+    ROUND(
+    ((curr_year_spend - prev_year_spend)/prev_year_spend)*100
+    ,2) AS yoy_growth
+FROM final
