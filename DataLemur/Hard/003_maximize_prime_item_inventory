@@ -1,0 +1,46 @@
+/*
+Capacity Allocation Pattern
+→ Compute unit size (batch size)
+→ Use integer division to compute maximum units
+→ Calculate remaining capacity
+→ Allocate remainder to next priority
+→ Convert units (batches) into actual item count
+*/
+
+WITH batch_size AS (
+    SELECT 
+        item_type,
+        SUM(square_footage) AS batch_sq_ft,
+        COUNT(*) AS items_count
+    FROM inventory
+    GROUP BY item_type
+),
+
+prime_cal AS (
+    SELECT 
+        item_type,
+        FLOOR(500000/batch_sq_ft) AS prime_batches,
+        FLOOR(500000/batch_sq_ft) * items_count AS prime_items,
+        500000 - FLOOR(500000/batch_sq_ft) * batch_sq_ft AS remaining_sq_ft
+    FROM batch_size
+    WHERE item_type = 'prime_eligible'
+),
+
+non_prime_cal AS (
+    SELECT 
+        FLOOR(p.remaining_sq_ft/b.batch_sq_ft) AS non_prime_batches,
+        FLOOR(p.remaining_sq_ft/b.batch_sq_ft) * items_count AS non_prime_items
+    FROM prime_cal p
+    JOIN batch_size b 
+        ON b.item_type = 'not_prime'
+)
+
+SELECT 
+    'prime_eligible' AS item_type, prime_items AS items_count
+FROM prime_cal
+
+UNION ALL 
+
+SELECT 
+    'not_prime' AS item_type, non_prime_items AS items_count
+FROM non_prime_cal;
