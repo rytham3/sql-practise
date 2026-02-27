@@ -1,3 +1,13 @@
+/*
+Pattern: 
+1. Aggregate first (GROUP BY year, product_id)
+2. Use LAG() window function
+3. Apply growth formula
+4. Round properly
+*/
+
+
+
 WITH yearly_spend AS (
     SELECT
         EXTRACT(YEAR FROM transaction_date) AS year_,
