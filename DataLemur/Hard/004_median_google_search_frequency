@@ -1,0 +1,29 @@
+"""
+Platform: DataLemur 
+Problem: https://datalemur.com/questions/median-search-freq
+Difficulty: Hard
+Concepts: groupby, generate_series, round, percentile_cont, decimal, with clause 
+"""
+
+WITH expanded_data AS (
+    SELECT searches
+    FROM search_frequency
+    GROUP BY 
+        searches,
+        GENERATE_SERIES(1,num_users)
+)
+
+SELECT 
+    ROUND(
+      PERCENTILE_CONT(0.50)
+      WITHIN GROUP (ORDER BY searches)::DECIMAL
+    ,1    
+    ) AS median
+FROM expanded_data;
+
+
+Pattern: Frequency Expansion + Percentile Pattern
+frequency table
+→ GENERATE_SERIES
+→ expanded rows
+→ PERCENTILE_CONT
