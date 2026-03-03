@@ -1,0 +1,33 @@
+"""
+Platform: DL
+Problem: https://datalemur.com/questions/consecutive-filing-years
+Difficulty: Hard
+Concepts: DATE_TRUNC, LAG, LEAD, INTERVAL, HAVING
+"""
+
+
+
+
+WITH turbo_tax_cte AS (
+    SELECT 
+        user_id,
+        DATE_TRUNC('year',filing_date) AS filing_year,
+        LAG(DATE_TRUNC('year',filing_date)) OVER (
+          PARTITION BY  user_id 
+          ORDER BY filing_date
+        ) AS previous_year,
+        LEAD(DATE_TRUNC('year',filing_date)) OVER (
+          PARTITION BY user_id
+          ORDER BY filing_date
+        ) AS following_year
+    FROM filed_taxes
+    WHERE LOWER(product) LIKE 'turbotax%'
+)
+
+SELECT 
+      user_id
+FROM turbo_tax_cte
+WHERE previous_year = filing_year - INTERVAL '1 year'
+      OR following_year = filing_year + INTERVAL '1 year'
+GROUP BY user_id
+HAVING COUNT(filing_year) >= 3;
