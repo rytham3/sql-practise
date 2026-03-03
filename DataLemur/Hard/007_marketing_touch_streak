@@ -1,0 +1,36 @@
+"""
+Platform: DL
+Problem: https://datalemur.com/questions/marketing-touch-streak
+Difficulty: Hard
+Concepts: DATE_TRUNC, LAG, LEAD, INNER JOIN, Sub-query
+"""
+
+WITH consecutive_events AS (
+    SELECT 
+        event_id,
+        contact_id,
+        event_type,
+        DATE_TRUNC('week',event_date) AS event_week,
+        LAG(DATE_TRUNC('week',event_date)) OVER (
+            PARTITION BY contact_id
+            ORDER BY event_date
+        ) AS previous_week,
+        LEAD(DATE_TRUNC('week',event_date)) OVER (
+            PARTITION BY contact_id
+            ORDER BY event_date
+        ) AS following_week
+    FROM marketing_touches
+)
+
+SELECT DISTINCT cc.email
+FROM consecutive_events AS ce 
+INNER JOIN crm_contacts AS cc 
+      ON ce.contact_id = cc.contact_id
+WHERE ce.previous_week = ce.event_week - INTERVAL '1 week'
+      OR ce.following_week = ce.event_week + INTERVAL '1 WEEK'
+      AND ce.contact_id IN (
+        SELECT contact_id
+        FROM marketing_touches
+        WHERE event_type = 'trial_request'
+      );
+
