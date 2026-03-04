@@ -1,0 +1,22 @@
+WITH ordered AS (
+    SELECT 
+          item_count,
+          order_occurrences,
+          SUM(order_occurrences) OVER (ORDER BY item_count) AS running_sum,
+          SUM(order_occurrences) OVER () AS total_orders
+    FROM items_per_order
+),
+
+median_positions AS (
+    SELECT 
+          *,
+          FLOOR((total_orders+1)/2.0) AS post1, 
+          CEIL((total_orders+1)/2.0) AS post2
+    FROM ordered 
+)
+
+SELECT 
+      ROUND(AVG(item_count)::numeric,1) AS median
+FROM median_positions
+WHERE running_sum >= post1 
+      AND running_sum - order_occurrences < post2;
