@@ -1,3 +1,17 @@
+"""
+Quesiton:-
+- Airbnb wants 2021 mein avg vaccant days per active listing
+- Means for every property: 
+      - Vaccant_days = 365 - booked_days
+
+Patten used here:
+- LEFT JOIN with filtering
+- Date overlap calculation
+- Aggregation per entity
+"""
+
+
+
 WITH booked_days AS (
       SELECT 
             l.listing_id,
