@@ -1,0 +1,19 @@
+WITH booked_days AS (
+      SELECT 
+            l.listing_id,
+            COALESCE(
+              SUM(
+                  CASE WHEN b.checkout_date > '2021-12-31' THEN '2021-12-31' ELSE b.checkout_date END - 
+                  CASE WHEN b.checkin_date < '2021-01-01' THEN '2021-01-01' ELSE b.checkin_date END 
+              ),0
+            ) AS booked_days
+      FROM listings AS l 
+      LEFT JOIN bookings AS b 
+          ON l.listing_id = b.listing_id
+      WHERE is_active = 1
+      GROUP BY l.listing_id
+)
+
+SELECT ROUND(AVG(365 - booked_days)) AS avg_vaccant_days
+FROM booked_days;
+
