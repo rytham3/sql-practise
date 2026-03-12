@@ -1,0 +1,14 @@
+WITH numbered_column AS(      
+      SELECT 
+          *,
+          COUNT(category) OVER (ORDER BY product_id) AS numbered_column
+      FROM products
+)
+
+SELECT product_id,
+       COALESCE(
+          category,
+          MAX(category) OVER (PARTITION BY numbered_column) 
+       ) AS filling_missed,
+       name
+FROM numbered_column;
