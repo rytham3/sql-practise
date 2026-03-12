@@ -1,0 +1,13 @@
+WITH ranking AS (
+      SELECT 
+            *,
+            ROW_NUMBER() OVER(
+                PARTITION BY manufacturer
+                ORDER BY units_sold DESC
+            ) AS rn
+      FROM pharmacy_sales
+)
+
+SELECT manufacturer, drug
+FROM ranking
+WHERE rn<=2;
