@@ -1,0 +1,52 @@
+"""
+Pseudo Code
+- CTE 1 : 
+      USE TO_CHAR(date, 'Mon-YYYY') AS highest_month, 
+      open AS highest_open,
+      Highest_open nikaalo with row_number() OVER(ORDER BY open DESC) AS rn 
+- CTE 2 : 
+      USE TO_CHAR(date, 'Mon-YYYY') AS lowest_month,
+      open AS lowest_open,
+      lowest_open nikaalo with row_number() OVER(ORDER BY open ASC) AS rn
+- SELECT ticker, highest_month, highest_open, lowest_month, lowest_open
+  FROM CT1 
+  JOIN CT2 
+      ON ticker
+  WHERE ct1.rn = 1 AND ct2.rn = 2 
+  ORDER BY ticker
+"""
+
+WITH highest AS (
+    SELECT ticker,
+           open AS highest_open,
+           TO_CHAR(date, 'Mon-YYYY') AS highest_month,
+           ROW_NUMBER() OVER(
+                PARTITION BY ticker
+                ORDER BY open DESC
+           ) AS rn 
+    FROM stock_prices
+),
+
+lowest AS (
+    SELECT ticker,
+           open AS lowest_open,
+           TO_CHAR(date,'Mon-YYYY') AS lowest_month,
+           ROW_NUMBER() OVER(
+                PARTITION BY ticker
+                ORDER BY open ASC  
+           ) AS rn 
+    FROM stock_prices
+)
+
+SELECT 
+      h.ticker,
+      h.highest_month,
+      h.highest_open,
+      l.lowest_month
+      l.lowest_open
+FROM highest AS h 
+JOIN lowest AS 
+      ON h.ticker = l.ticker
+WHERE h.rn=1 AND l.rn=1 
+ORDER BY h.ticker;
+
