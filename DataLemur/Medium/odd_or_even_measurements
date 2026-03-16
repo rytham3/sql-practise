@@ -1,0 +1,27 @@
+"
+Pseudo Code : 
+- Pehle row_number() use karke partition kardo date ke acc and order by measurement time as rn
+- sum karo odd and even measurements ke liye using case
+		when rn%2==0 then measurement_value else 0
+		when rn%2==1 then measurement_value else 0  
+- group by date of measurement_date
+"
+
+WITH cte AS (
+    SELECT *,
+          ROW_NUMBER() OVER (
+              PARTITION BY DATE(measurement_time)
+              ORDER BY measurement_time
+          ) AS rn 
+    FROM measurements
+)
+
+SELECT 
+      DATE(measurement_time) AS measurement_day,
+      SUM(CASE WHEN rn%2=1 THEN measurement_value ELSE 0 END 
+      ) AS odd_sum,
+      SUM(CASE WHEN rn%2=0 THEN measurement_value ELSE 0 END
+      ) AS even_sum
+FROM cte
+GROUP BY measurement_day
+ORDER BY measurement_day;
