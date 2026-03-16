@@ -1,0 +1,19 @@
+WITH product_catg_count AS (
+    SELECT 
+          c.customer_id,
+          COUNT(DISTINCT product_category) AS prod_cat_count
+    FROM customer_contracts c 
+    JOIN products p 
+        ON c.product_id = p.product_id
+    GROUP BY c.customer_id
+
+)
+
+SELECT 
+      customer_id
+FROM product_catg_count
+WHERE prod_cat_count = (
+        SELECT COUNT(DISTINCT product_category)
+        FROM products
+
+);
